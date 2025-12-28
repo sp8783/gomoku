@@ -218,7 +218,7 @@ class GomokuGUI:
                 winner = self.game.get_winner()
                 winner_name = "黒" if winner == 1 else "白"
                 self.status_label.config(text=f"{winner_name}の勝利!")
-                messagebox.showinfo("ゲーム終了", f"{winner_name}の勝利です！")
+                messagebox.showinfo("Game Over", f"{winner_name}の勝利です！")
             else:
                 current_player = self.game.get_current_player()
                 player_name = "黒" if current_player == 1 else "白"
