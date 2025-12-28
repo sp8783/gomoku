@@ -10,5 +10,8 @@ services:
       - WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-0}
       - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/mnt/wslg/runtime-dir}
       - PULSE_SERVER=${PULSE_SERVER:-/mnt/wslg/PulseServer}
+      - LANG=ja_JP.UTF-8
+      - LC_ALL=ja_JP.UTF-8
+      - FONTCONFIG_PATH=/etc/fonts
     stdin_open: true
     tty: true

@@ -1,10 +1,15 @@
+# -*- coding: utf-8 -*-
 """
 五目ならべのGUIインターフェース
 """
 
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, font as tkfont
 from gomoku_game import GomokuGame
+import os
+
+# Xftフォントレンダリングを有効化
+os.environ.setdefault('TK_AALIAS', '1')
 
 
 class GomokuGUI:
@@ -19,11 +24,27 @@ class GomokuGUI:
             board_size (int): ボードのサイズ
         """
         self.master = master
-        self.master.title("五目ならべ")
+
+        # Tclのエンコーディングを明示的にUTF-8に設定
+        self.master.tk.call('encoding', 'system', 'utf-8')
+
+        self.master.title("Gomoku - Five in a Row")
+
+        # UTF-8エンコーディングを設定
+        self.master.option_add('*font', 'TkDefaultFont')
 
         self.board_size = board_size
         self.cell_size = 40  # セルのサイズ（ピクセル）
         self.game = GomokuGame(board_size)
+
+        # 日本語対応フォントを選択
+        self.jp_font = self._get_japanese_font()
+
+        # デフォルトフォントを設定
+        default_font = tkfont.nametofont("TkDefaultFont")
+        default_font.configure(size=10)
+        text_font = tkfont.nametofont("TkTextFont")
+        text_font.configure(size=10)
 
         # キャンバスの作成
         canvas_size = self.cell_size * (self.board_size + 1)
@@ -44,7 +65,7 @@ class GomokuGUI:
             button_frame,
             text="新しいゲーム",
             command=self.reset_game,
-            font=("Arial", 12)
+            font=(self.jp_font, 12)
         )
         reset_button.pack(side=tk.LEFT, padx=5)
 
@@ -53,7 +74,7 @@ class GomokuGUI:
             button_frame,
             text="終了",
             command=master.quit,
-            font=("Arial", 12)
+            font=(self.jp_font, 12)
         )
         quit_button.pack(side=tk.LEFT, padx=5)
 
@@ -61,7 +82,7 @@ class GomokuGUI:
         self.status_label = tk.Label(
             master,
             text="黒の番です",
-            font=("Arial", 14, "bold")
+            font=(self.jp_font, 14, "bold")
         )
         self.status_label.pack(pady=5)
 
@@ -70,6 +91,39 @@ class GomokuGUI:
 
         # ボードを描画
         self.draw_board()
+
+    def _get_japanese_font(self):
+        """日本語をサポートするフォントを選択"""
+        # まずfontconfigから日本語フォントを取得
+        try:
+            import subprocess
+            result = subprocess.run(['fc-match', '-f', '%{family}', ':lang=ja'],
+                                  capture_output=True, text=True)
+            if result.returncode == 0 and result.stdout:
+                fc_font = result.stdout.strip().split(',')[0]
+                # Tkinterが認識していなくても、Xftが使えるはずなので返す
+                return fc_font
+        except Exception:
+            pass
+
+        # fontconfigが失敗した場合、優先順位でフォントを選択
+        available_fonts = list(tkfont.families())
+        preferred_fonts = [
+            'Noto Sans CJK JP',
+            'Noto Serif CJK JP',
+            'Noto Sans CJK',
+            'Noto Sans',
+            'DejaVu Sans',
+            'TkDefaultFont',
+            'fixed'  # X11のデフォルトフォント
+        ]
+
+        for font_name in preferred_fonts:
+            if font_name in available_fonts:
+                return font_name
+
+        # どれも見つからない場合は空文字列（システムデフォルト）
+        return ''
 
     def draw_board(self):
         """ボードを描画"""
